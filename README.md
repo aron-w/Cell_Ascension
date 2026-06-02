@@ -30,7 +30,7 @@ fixes to the ZB version:
 
 # New features: 
 
-1- Sort by role (completed, works same as the retail/classic addon)
+1- Sort by role (completed, works same as the retail/classic addon) - tested in random dungeon finder only.
 
 # Upcoming features:
 
