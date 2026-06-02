@@ -20,6 +20,10 @@ fixes to the ZB version:
 
 1- Heal prediction is not working perfectly right 100% of the times, but it mostly works, neither it was with ascension default frames. will try to fix
 
+# Upcoming features:
+
+1- Sort by role
+
 # Cell
 
 Clean, responsive raid and party frames designed to surface the information you need without the clutter.
