@@ -26,7 +26,7 @@ fixes to the ZB version:
 
 # Known issues:
 
-1- Heal prediction is not working perfectly right 100% of the times, but it mostly works, neither it was with ascension default frames. will try to fix
+CoA realm don't work properly at least for now. not sure when this will be supported
 
 # New features: 
 
