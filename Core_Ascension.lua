@@ -34,11 +34,11 @@ local P = Cell.pixelPerfectFuncs
 local L = Cell.L
 
 -- sharing version check
-Cell.MIN_VERSION = 246
-Cell.MIN_CLICKCASTINGS_VERSION = 246
-Cell.MIN_LAYOUTS_VERSION = 246
-Cell.MIN_INDICATORS_VERSION = 246
-Cell.MIN_DEBUFFS_VERSION = 246
+Cell.MIN_VERSION = 1
+Cell.MIN_CLICKCASTINGS_VERSION = 1
+Cell.MIN_LAYOUTS_VERSION = 1
+Cell.MIN_INDICATORS_VERSION = 1
+Cell.MIN_DEBUFFS_VERSION = 1
 
 --[==[@debug@
 --@end-debug@]==]
