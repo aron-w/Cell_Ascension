@@ -15,7 +15,7 @@ Clean, responsive raid and party frames designed to surface the information you 
 
 - Inspired by CompactRaid, Grid2, Aptechka, and VuhDo, refined into a friendlier, faster package.
 - Built for clarity: sharp debuff tracking, healer-friendly indicators, and quick setup.
-- Works great on Ascension and Wrath-era clients.
+- Works great on Ascension client.
 
 **Ascension port**
 
