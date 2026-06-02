@@ -1,3 +1,8 @@
 to test range check:
 
 /run CellRangeCheckDebug:Show()
+
+
+to check addon usage ram:
+
+/run GarbageCollectionUtil.SetAllowUpdateMemoryUsage(true)
