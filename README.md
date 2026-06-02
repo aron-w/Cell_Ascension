@@ -22,6 +22,8 @@ fixes to the ZB version:
 
 1- Heal prediction is not working perfectly right 100% of the times, but it mostly works, neither it was with ascension default frames. will try to fix
 
+2- Addon frames stay on top of other frames. should stay behind. fixing
+
 # New features: 
 
 1- Sort by role (completed, works same as the retail/classic addon)
