@@ -2217,7 +2217,7 @@ local IsSpellInRange = (C_Spell and C_Spell.IsSpellInRange) and C_Spell.IsSpellI
 local IsItemInRange = (C_Spell and C_Item.IsItemInRange) and C_Item.IsItemInRange or IsItemInRange
 local CheckInteractDistance = CheckInteractDistance
 local UnitIsDead = UnitIsDead
-local IsSpellKnownOrOverridesKnown = IsSpellKnownOrOverridesKnown
+local IsSpellKnownOrOverridesKnown = IsSpellKnownOrOverridesKnown or function() return true end
 -- local GetSpellTabInfo = GetSpellTabInfo
 -- local GetNumSpellTabs = GetNumSpellTabs
 -- local GetSpellBookItemName = GetSpellBookItemName
@@ -2232,7 +2232,7 @@ else
     UnitInSamePhase = UnitInPhase
 end
 
-local playerClass = UnitClassBase("player")
+local _, playerClass = UnitClassBase("player")
 
 local friendSpells = {
     -- ["DEATHKNIGHT"] = 47541,
@@ -2245,7 +2245,7 @@ local friendSpells = {
     ["MAGE"] = 1459, -- 奥术智慧 / 奥术光辉
     ["MONK"] = 116670, -- 活血术
     ["PALADIN"] = Cell.isRetail and 19750 or 635, -- 圣光闪现 / 圣光术
-    ["PRIEST"] = (Cell.isWrath or Cell.isVanilla) and 2050 or 2061, -- 次级治疗术 / 快速治疗
+    ["PRIEST"] = 139, -- Renew (40y)
     -- ["ROGUE"] = Cell.isWrath and 57934,
     ["SHAMAN"] = Cell.isRetail and 8004 or 331, -- 治疗之涌 / 治疗波
     ["WARLOCK"] = 5697, -- 无尽呼吸
@@ -2336,7 +2336,7 @@ local harmItems = {
 local UnitInSpellRange
 if C_Spell and C_Spell.IsSpellInRange then
     UnitInSpellRange = function(spellName, unit)
-        return IsSpellInRange(spellName, unit)
+        return IsSpellInRange(spellName, unit) == true or IsSpellInRange(spellName, unit) == 1
     end
 else
     UnitInSpellRange = function(spellName, unit)
@@ -2359,10 +2359,9 @@ local function SPELLS_CHANGED()
     spell_dead = CELL_RANGE_CHECK_DEAD[playerClass] or deadSpells[playerClass]
     spell_pet = CELL_RANGE_CHECK_PET[playerClass] or petSpells[playerClass]
 
-    if spell_friend and IsSpellKnownOrOverridesKnown(spell_friend) then
-        spell_friend = F.GetSpellInfo(spell_friend)
-    else
-        spell_friend = nil
+    if spell_friend then
+        local name = F.GetSpellInfo(spell_friend)
+        spell_friend = name or nil -- skip IsSpellKnownOrOverridesKnown: Ascension custom spells may fail it
     end
     if spell_harm and IsSpellKnownOrOverridesKnown(spell_harm) then
         spell_harm = F.GetSpellInfo(spell_harm)
@@ -2396,6 +2395,7 @@ local function DELAYED_SPELLS_CHANGED()
 end
 
 rc:SetScript("OnEvent", DELAYED_SPELLS_CHANGED)
+SPELLS_CHANGED()
 
 function F.IsInRange(unit, check)
     if not UnitIsVisible(unit) then
@@ -2411,6 +2411,12 @@ function F.IsInRange(unit, check)
         local inRange, checked = UnitInRange(unit)
         if not checked then
             return F.IsInRange(unit, true)
+        end
+        if inRange then return true end
+        -- UnitInRange may use a shorter range than actual spell range on Ascension;
+        -- verify with spell_friend before concluding out of range
+        if spell_friend then
+            return UnitInSpellRange(spell_friend, unit)
         end
         return inRange
 
