@@ -632,10 +632,7 @@ local function BarIcon_SetCooldown(frame, start, duration, debuffType, texture, 
             frame.ag:Play()
         end
     else
-        -- default behavior
-        if refreshing then
-            frame.ag:Play()
-        end
+        -- default behavior (jumping disabled by default)
     end
 end
 

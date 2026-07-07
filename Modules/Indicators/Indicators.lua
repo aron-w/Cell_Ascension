@@ -1727,8 +1727,8 @@ local function ShowIndicatorSettings(id)
             local _, setting, tooltip = string.split(":", currentSetting)
             local value = indicatorTable[setting]
             if setting == "showJumpingAnimation" and type(value) ~= "boolean" then
-                value = true
-                indicatorTable[setting] = true
+                value = false
+                indicatorTable[setting] = false
             end
             w:SetDBValue(setting, value, tooltip)
             w:SetFunc(function(value)
