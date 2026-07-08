@@ -4,38 +4,6 @@ Ported from: https://github.com/ZeroBeta/Cell_Wrath
 
 Make sure to folder name is Cell_Ascension for the addon to work.
 
-I recommend installing with gitAddonManager so that you get auto updates. It should name the folder properly by default. Im activily working on the addon, expect updates at any time
-
-if a spell you want to bind is not shown use wowhead to get spellid like: https://www.wowhead.com/wotlk/spell=39013/heal    the spellid is 39013. when you are binding a spell click "edit" on the spell selection dropdown box and enter id. or better yet: enable id on tooltip (ingame press Esc- interface- help- check setting) and use the id that you now see
-
-# Change log:
-
-fixes to the ZB version:
-
-1- click casting bindings to keyboard keys work
-
-2- range check logic now works properly where before it would fade out at 28 yards. Tested for priest after you learn renew may need testing on other classes
-
-3- fixed the "menu" action under clickCasting to work when binded to mouse keys like for example: control+rightClick
-
-4- "strata" set to low as default so addon frames stay behind normal UI frames
-
-5- buff/debuff animation fixed (must use clock style in 3.3.5 not vertical like retail supports)
-
-6- many general fixes from contributor PR's
-
-# Known issues:
-
-CoA realm don't work properly at least for now. not sure when this will be supported
-
-# New features: 
-
-1- Sort by role (completed, works same as the retail/classic addon) - tested in random dungeon finder only.
-
-# Upcoming features:
-
-None for now.
-
 # Cell
 
 Clean, responsive raid and party frames designed to surface the information you need without the clutter.
