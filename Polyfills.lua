@@ -1935,32 +1935,47 @@ function Polyfill.CreateAnimation(ag, animType, name, inherits)
         -- Attach our custom play hook
         if not ag._cellAnimations then ag._cellAnimations = {} end
         table.insert(ag._cellAnimations, anim)
-        
-        if not ag._CellPlayHook then
-            local orig_Play = ag.Play
-            ag.Play = function(self)
-                if self._cellAnimations then
-                    for _, a in ipairs(self._cellAnimations) do
-                        if a._fromAlpha then
-                            local region = a:GetParent() and a:GetParent():GetParent()
-                            if region and region.SetAlpha then region:SetAlpha(a._fromAlpha) end
+    end
+    
+    return anim
+end
+
+-- Securely hook the global AnimationGroup:Play method to apply WotLK fixes
+-- We use hooksecurefunc to avoid UI taint that comes from directly overwriting metatable methods
+do
+    local f = CreateFrame("Frame")
+    local ag = f:CreateAnimationGroup()
+    local mt = getmetatable(ag)
+    if mt and mt.__index and mt.__index.Play and not Cell._AnimationSystemPlayHooked then
+        hooksecurefunc(mt.__index, "Play", function(self)
+            if self._cellAnimations then
+                for _, a in ipairs(self._cellAnimations) do
+                    if a._fromAlpha then
+                        local region = a:GetParent() and a:GetParent():GetParent()
+                        if region and region.SetAlpha then 
+                            region:SetAlpha(a._fromAlpha) 
+                            if a._toAlpha and a.SetChange then
+                                a:SetChange(a._toAlpha - a._fromAlpha)
+                            end
                         end
-                        if a._fromX or a._fromY then
-                            local region = a:GetParent() and a:GetParent():GetParent()
-                            if region and region.SetScale then 
-                                local s = math.max(a._fromX or 0, a._fromY or 0)
-                                region:SetScale(s == 0 and 0.001 or s) 
+                    end
+                    if a._fromX or a._fromY then
+                        local region = a:GetParent() and a:GetParent():GetParent()
+                        if region and region.SetScale then 
+                            local s = math.max(a._fromX or 0, a._fromY or 0)
+                            region:SetScale(s == 0 and 0.001 or s) 
+                            local toS = math.max(a._toX or 1, a._toY or 1)
+                            if a.SetScale then
+                                local fromS = s == 0 and 0.001 or s
+                                a:SetScale(toS / fromS, toS / fromS)
                             end
                         end
                     end
                 end
-                if orig_Play then orig_Play(self) end
             end
-            ag._CellPlayHook = true
-        end
+        end)
+        Cell._AnimationSystemPlayHooked = true
     end
-    
-    return anim
 end
 
 function Polyfill.CreateMaskTexture(frame)
