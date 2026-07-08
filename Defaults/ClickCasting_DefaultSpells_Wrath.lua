@@ -277,6 +277,7 @@ local defaultSpells = {
          804049, -- Allcure Elixir
          707671, -- Power Wuju
          560294, -- Spirit Wuju
+         801796, -- Reclaim Soul
         },
     },
 	["DEMONHUNTER"] = {

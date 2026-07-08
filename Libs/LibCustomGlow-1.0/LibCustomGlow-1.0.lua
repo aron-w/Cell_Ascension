@@ -44,8 +44,10 @@ local GlowMaskPool = {
         else
             -- Return a stub object with minimal methods
             return {
-                Hide = function() end,
-                Show = function() end,
+                _isShown = true,
+                Hide = function(self) self._isShown = false end,
+                Show = function(self) self._isShown = true end,
+                IsShown = function(self) return self._isShown end,
                 ClearAllPoints = function() end,
                 SetPoint = function() end,
                 SetSize = function() end,
