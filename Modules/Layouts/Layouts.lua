@@ -246,6 +246,7 @@ local function CreateLayoutPreview()
 end
 
 local function UpdateLayoutPreview()
+    if InCombatLockdown() then return end
     if not layoutPreview then
         CreateLayoutPreview()
     end
@@ -545,6 +546,7 @@ local function CreateNPCPreview()
 end
 
 local function UpdateNPCPreview()
+    if InCombatLockdown() then return end
     if not npcPreview then
         CreateNPCPreview()
     end
@@ -794,6 +796,7 @@ local function CreatePetPreview()
 end
 
 local function UpdatePetPreview()
+    if InCombatLockdown() then return end
     if not petPreview then
         CreatePetPreview()
     end
@@ -1073,6 +1076,7 @@ local function CreateSpotlightPreview()
 end
 
 local function UpdateSpotlightPreview()
+    if InCombatLockdown() then return end
     if not spotlightPreview then
         CreateSpotlightPreview()
     end

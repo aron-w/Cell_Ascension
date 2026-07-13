@@ -486,8 +486,12 @@ Cell.RegisterCallback("UpdateMenu", "NPCFrame_UpdateMenu", UpdateMenu)
 local function NPCFrame_UpdateLayout(layout, which)
     -- visibility
     if Cell.vars.isHidden then
-        UnregisterAttributeDriver(npcFrame, "state-visibility")
-        npcFrame:Hide()
+        if InCombatLockdown() then
+            RegisterAttributeDriver(npcFrame, "state-visibility", "hide")
+        else
+            UnregisterAttributeDriver(npcFrame, "state-visibility")
+            npcFrame:Hide()
+        end
         return
     end
     RegisterAttributeDriver(npcFrame, "state-visibility", "[@raid1,exists] show;[@party1,exists] show;show")
@@ -692,8 +696,12 @@ local function NPCFrame_UpdateLayout(layout, which)
         else
             -- NOTE: RegisterAttributeDriver
             for _, b in ipairs(Cell.unitButtons.npc) do
-                UnregisterAttributeDriver(b, "state-visibility")
-                b:Hide()
+                if InCombatLockdown() then
+                    RegisterAttributeDriver(b, "state-visibility", "hide")
+                else
+                    UnregisterAttributeDriver(b, "state-visibility")
+                    b:Hide()
+                end
             end
         end
     end

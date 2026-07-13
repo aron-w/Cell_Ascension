@@ -22,12 +22,18 @@ Cell.unitButtons.solo["pet"] = petButton
 local function SoloFrame_UpdateLayout(layout, which)
     -- visibility
     if Cell.vars.groupType ~= "solo" or Cell.vars.isHidden then
-        UnregisterAttributeDriver(soloFrame, "state-visibility")
-        soloFrame:Hide()
+        if InCombatLockdown() then
+            RegisterAttributeDriver(soloFrame, "state-visibility", "hide")
+        else
+            UnregisterAttributeDriver(soloFrame, "state-visibility")
+            soloFrame:Hide()
+        end
         return
     else
         RegisterAttributeDriver(soloFrame, "state-visibility", "show")
-        soloFrame:Show()
+        if not InCombatLockdown() then
+            soloFrame:Show()
+        end
     end
 
     -- update
@@ -103,8 +109,12 @@ local function SoloFrame_UpdateLayout(layout, which)
         if layout["pet"]["soloEnabled"] then
             RegisterAttributeDriver(petButton, "state-visibility", "[nopet] hide; [vehicleui] hide; show")
         else
-            UnregisterAttributeDriver(petButton, "state-visibility")
-            petButton:Hide()
+            if InCombatLockdown() then
+                RegisterAttributeDriver(petButton, "state-visibility", "hide")
+            else
+                UnregisterAttributeDriver(petButton, "state-visibility")
+                petButton:Hide()
+            end
         end
     end
 end
@@ -128,7 +138,9 @@ local function SoloFrame_GroupTypeChanged(groupType)
                     else
                         -- Button not visible - the attribute driver may not have updated
                         -- Force show the frame and retry
-                        soloFrame:Show()
+                        if not InCombatLockdown() then
+                            soloFrame:Show()
+                        end
                         C_Timer.After(0.2, function()
                             if playerButton:IsVisible() then
                                 playerButton._updateRequired = 1
