@@ -341,7 +341,7 @@ else
                 if PlayerInCombat() then
                     self:SetAttribute(menuKey, nil)
                 else
-                    self:SetAttribute(menuKey, "togglemenu")
+                    self:SetAttribute(menuKey, "menu")
                 end
             end
         ]])
@@ -516,14 +516,8 @@ local function ApplyClickCastings(b)
 
         if t[2] == "togglemenu_nocombat" then
             b:SetAttribute("menu", bindKey)
-        ------------------------------------------------------------------
-        --* 已修复：实际上载具（宠物按钮）无法选中的原因是没有 SetAttribute("toggleForVehicle", false)
-        -- elseif Cell.isCata and t[2] == "target" then
-        --     b:SetAttribute(bindKey, "macro")
-        --     local attr = string.gsub(bindKey, "type", "macrotext")
-        --     b:SetAttribute(attr, "/tar [@cell]")
-        --     UpdatePlaceholder(b, attr)
-        ------------------------------------------------------------------
+        elseif t[2] == "togglemenu" then
+            b:SetAttribute(bindKey, "menu")
         else
             b:SetAttribute(bindKey, t[2])
         end
@@ -602,7 +596,7 @@ local function ApplyClickCastings(b)
             b:SetAttribute(bindKey, "macro")
             local attr = string.gsub(bindKey, "type", "macrotext")
             b:SetAttribute(attr, t[3])
-        else
+        elseif t[2] ~= "togglemenu_nocombat" and t[2] ~= "togglemenu" then
             local attr = string.gsub(bindKey, "type", t[2])
             b:SetAttribute(attr, t[3])
         end
@@ -646,61 +640,47 @@ local function GetPostClickBindKey(button, modifier)
     return "type-"..button
 end
 
-local function ShowUnitMenu(button)
-    if InCombatLockdown() then return end
+local CellDropdown = CreateFrame("Frame", "CellUnitDropdown", UIParent, "UIDropDownMenuTemplate")
+local function CellDropdown_Initialize(self, level)
+    local unit = self.unit
+    if not unit then return end
+    local menuType
+    if UnitIsUnit(unit, "player") then
+        menuType = "SELF"
+    elseif UnitIsUnit(unit, "vehicle") then
+        menuType = "VEHICLE"
+    elseif UnitIsUnit(unit, "pet") then
+        menuType = "PET"
+    elseif UnitIsPlayer(unit) then
+        if UnitInRaid(unit) then
+            menuType = "RAID_PLAYER"
+        elseif UnitInParty(unit) then
+            menuType = "PARTY"
+        else
+            menuType = "PLAYER"
+        end
+    else
+        menuType = "TARGET"
+    end
+    if menuType then
+        if UnitPopupMenus and UnitPopupMenus[menuType] then
+            for i = #UnitPopupMenus[menuType], 1, -1 do
+                if UnitPopupMenus[menuType][i] == "SET_FOCUS" or UnitPopupMenus[menuType][i] == "CLEAR_FOCUS" then
+                    table.remove(UnitPopupMenus[menuType], i)
+                end
+            end
+        end
+        UnitPopup_ShowMenu(self, menuType, unit, nil, nil)
+    end
+end
 
+local function ShowUnitMenu(button)
     local unit = button:GetAttribute("unit")
     if not unit or not UnitExists(unit) then return end
 
-    if UnitIsUnit(unit, "player") then
-        if PlayerFrameDropDown then
-            ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
-        end
-        return
-    end
-
-    if unit == "pet" or unit == "vehicle" then
-        if PetFrameDropDown then
-            ToggleDropDownMenu(1, nil, PetFrameDropDown, "cursor")
-        end
-        return
-    end
-
-    if unit == "target" then
-        if TargetFrameDropDown then
-            ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
-        end
-        return
-    end
-
-    if unit == "focus" then
-        if FocusFrameDropDown then
-            ToggleDropDownMenu(1, nil, FocusFrameDropDown, "cursor")
-        end
-        return
-    end
-
-    local unitID = tonumber(strmatch(unit, "(%d+)$"))
-    if strfind(unit, "^party%d+$") then
-        local dropdown = unitID and _G["PartyMemberFrame"..unitID.."DropDown"]
-        if dropdown then
-            ToggleDropDownMenu(1, nil, dropdown, "cursor")
-        end
-        return
-    end
-
-    if strfind(unit, "^raid%d+$") and FriendsDropDown and RaidFrameDropDown_Initialize and unitID then
-        HideDropDownMenu(1)
-
-        local menuFrame = FriendsDropDown
-        menuFrame.displayMode = "MENU"
-        menuFrame.initialize = RaidFrameDropDown_Initialize
-        menuFrame.userData = unitID
-        menuFrame.unit = unit
-        menuFrame.name = UnitName(unit)
-        menuFrame.id = unitID
-        ToggleDropDownMenu(1, nil, menuFrame, "cursor")
-    end
+    CellDropdown.unit = unit
+    UIDropDownMenu_Initialize(CellDropdown, CellDropdown_Initialize, "MENU")
+    ToggleDropDownMenu(1, nil, CellDropdown, "cursor")
 end
 
 local function IsBoundMenuAction(button, bindKey)
@@ -717,6 +697,7 @@ function F.UpdateClickCastOnFrame(frame, snippet)
     if frame then
         if not frame._menuPostClickHooked then
             frame._menuPostClickHooked = true
+            frame.menu = ShowUnitMenu
             Cell.Polyfill.HookScript(frame, "PreClick", function(self)
                 self._menuClickModifier = GetPostClickModifier()
             end)
