@@ -436,6 +436,7 @@ local function Debuffs_ShowTooltip(debuffs, show)
     for i = 1, 10 do
         if show then
             debuffs[i]:SetScript("OnEnter", function(self)
+                debuffs.parent._showingAuraTooltip = true
                 if self.index then
                     F.ShowTooltips(debuffs.parent, "spell", debuffs.parent.states.displayedUnit, self.index, "HARMFUL")
                 elseif self.auraInstanceID then
@@ -444,6 +445,7 @@ local function Debuffs_ShowTooltip(debuffs, show)
             end)
 
             debuffs[i]:SetScript("OnLeave", function()
+                debuffs.parent._showingAuraTooltip = nil
                 GameTooltip:Hide()
             end)
 
@@ -476,13 +478,21 @@ local function Debuffs_EnableBlacklistShortcut(debuffs, enabled)
 
     for i = 1, 10 do
         if enabled then
-            debuffs[i]:SetScript("OnMouseUp", function(self, button, isInside)
-                if button == "RightButton" and isInside and IsLeftAltKeyDown() and IsLeftControlKeyDown()
+            -- The shortcut needs mouse input even when aura tooltips are off.
+            -- This also makes setup order irrelevant when both options are on.
+            debuffs[i]:EnableMouse(true)
+            debuffs[i]:SetScript("OnMouseDown", function(self, button)
+                if button == "RightButton" and IsLeftAltKeyDown() and IsLeftControlKeyDown()
                     and self.spellId and not F.TContains(CellDB["debuffBlacklist"], self.spellId) then
                     -- print msg
                     local name, icon = F.GetSpellInfo(self.spellId)
                     if name and icon then
-                        F.Print(L["Added |T%d:0|t|cFFFF3030%s(%d)|r into debuff blacklist."]:format(icon, name, self.spellId))
+                        -- Ascension returns texture paths here, while other clients
+                        -- can return numeric texture IDs. Substitute the icon before
+                        -- formatting the localized spell name and ID.
+                        local message = L["Added |T%d:0|t|cFFFF3030%s(%d)|r into debuff blacklist."]
+                        message = message:gsub("|T%%d:0|t", "|T"..icon..":0|t")
+                        F.Print(message:format(name, self.spellId))
                     end
                     -- update db
                     tinsert(CellDB["debuffBlacklist"], self.spellId)
@@ -493,9 +503,13 @@ local function Debuffs_EnableBlacklistShortcut(debuffs, enabled)
                 end
             end)
         else
-            debuffs[i]:SetScript("OnMouseUp", nil)
+            debuffs[i]:SetScript("OnMouseDown", nil)
             if debuffs.showTooltip then
-                Cell.Polyfill.SetMouseClickEnabled(debuffs[i], false)
+                if Cell.isWrath or Cell.isVanilla or Cell.isCata then
+                    debuffs[i]:EnableMouse(true)
+                else
+                    Cell.Polyfill.SetMouseClickEnabled(debuffs[i], false)
+                end
             else
                 debuffs[i]:EnableMouse(false)
             end
@@ -913,6 +927,7 @@ local function RaidDebuffs_ShowTooltip(raidDebuffs, show)
     for i = 1, 3 do
         if show then
             raidDebuffs[i]:SetScript("OnEnter", function(self)
+                raidDebuffs.parent._showingAuraTooltip = true
                 if self.index then
                     F.ShowTooltips(raidDebuffs.parent, "spell", raidDebuffs.parent.states.displayedUnit, self.index, "HARMFUL")
                 elseif self.auraInstanceID then
@@ -920,8 +935,13 @@ local function RaidDebuffs_ShowTooltip(raidDebuffs, show)
                 end
             end)
             raidDebuffs[i]:SetScript("OnLeave", function()
+                raidDebuffs.parent._showingAuraTooltip = nil
                 GameTooltip:Hide()
             end)
+            -- An OnEnter handler is only fired for mouse-enabled regions.
+            -- Unlike the regular Debuffs indicator, Raid Debuffs previously
+            -- never enabled mouse input when tooltips were turned on.
+            raidDebuffs[i]:EnableMouse(true)
         else
             raidDebuffs[i]:SetScript("OnEnter", nil)
             raidDebuffs[i]:SetScript("OnLeave", nil)
