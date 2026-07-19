@@ -2792,6 +2792,8 @@ local function UnitButton_OnEnter(self)
 
     if highlightEnabled then self.widgets.mouseoverHighlight:Show() end
 
+    if self._showingAuraTooltip then return end
+
     local unit = self.states.displayedUnit
     if not unit then return end
 
@@ -2800,7 +2802,9 @@ end
 
 local function UnitButton_OnLeave(self)
     self.widgets.mouseoverHighlight:Hide()
-    GameTooltip:Hide()
+    if not self._showingAuraTooltip then
+        GameTooltip:Hide()
+    end
 end
 
 local UNKNOWN = _G.UNKNOWN
